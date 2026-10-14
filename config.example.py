@@ -1,4 +1,4 @@
-# Copy this file to config.py and put in your own MySQL password.
+# Copy this file to config.py and fill in your own MySQL credentials.
 # config.py is git-ignored so the real password never reaches GitHub.
 DB_CONFIG = {
     'host': 'localhost',

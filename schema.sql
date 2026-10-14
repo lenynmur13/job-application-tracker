@@ -1,8 +1,8 @@
--- Job Application Tracker schema COP4751.
+-- Job Application Tracker by Lenyn Murillo
 CREATE DATABASE IF NOT EXISTS job_tracker;
 USE job_tracker;
 
--- Drop children before parents so FK constraints don't block the drops
+-- keeping it clean
 DROP TABLE IF EXISTS applications;
 DROP TABLE IF EXISTS contacts;
 DROP TABLE IF EXISTS jobs;
@@ -28,7 +28,7 @@ CREATE TABLE jobs (
     salary_max      INT,
     job_url         VARCHAR(300),                
     date_posted     DATE,
-    requirements    JSON,                       
+    requirements    JSON,                        
     job_description TEXT,
     created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     -- CASCADE so deleting a company removes its jobs instead of failing on the FK
@@ -42,7 +42,7 @@ CREATE TABLE applications (
     status            ENUM('Applied','Screening','Interview','Offer','Rejected','Withdrawn') DEFAULT 'Applied',
     resume_version    VARCHAR(50),
     cover_letter_sent BOOLEAN DEFAULT FALSE,
-    interview_data    JSON,                     
+    interview_data    JSON,                      
     notes             TEXT,
     created_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (job_id) REFERENCES jobs(job_id) ON DELETE CASCADE
@@ -61,18 +61,19 @@ CREATE TABLE contacts (
     FOREIGN KEY (company_id) REFERENCES companies(company_id) ON DELETE CASCADE
 );
 
+-- Seed data, rebuilt from assignment 2/3/4 queries and mapped to this schema way of organizing
 -- Dates are fixed (not CURDATE()) so every re-run produces identical data.
+-- requirements is new (not in the old queries): placeholder skills so Job Match has data; jobs 1 and 3 mirror the spec's example
 
 INSERT INTO companies (company_name, industry, website, city, state, notes) VALUES
     ('Tech Solutions Inc',  'Technology',      'www.techsolutions.com',     'Miami',         'Florida',       NULL),
     ('Data Analytics Corp', 'Data Science',    'www.dataanalytics.com',     'Austin',        'Texas',         NULL),
     ('Cloud Systems LLC',   'Cloud Computing', 'www.cloudsystems.com',      'Seattle',       'Washington',    NULL),
-    ('Digital Innovations', 'Software',        'www.digitalinnovations.com','San Francisco', 'California',    'Applied to Senior Developer position on 2025-01-17'),  
+    ('Digital Innovations', 'Software',        'www.digitalinnovations.com','San Francisco', 'California',    'Applied to Senior Developer position on 2025-01-17'), 
     ('Smart Tech Group',    'AI/ML',           'www.smarttech.com',         'Boston',        'Massachusetts', NULL),
     ('New Tech Corp',       'Technology',      NULL,                        'Denver',        'Colorado',      NULL); 
 
--- job_id 1-7 from assignment 2, 8-17 from assignment 3, 18 from assignment 4
--- requirements is new (not in the old queries): placeholder skills so Job Match has data; jobs 1 and 3 mirror the spec's example
+
 INSERT INTO jobs (company_id, job_title, job_type, salary_min, salary_max, date_posted, requirements) VALUES
     (1, 'Software Developer',      'Full-time',  70000,  90000, '2025-01-15', JSON_ARRAY('Python','SQL','Flask')),
     (1, 'Database Administrator',  'Full-time',  75000,  95000, '2025-01-10', JSON_ARRAY('SQL','MySQL','Database Design','Linux')),
@@ -91,7 +92,7 @@ INSERT INTO jobs (company_id, job_title, job_type, salary_min, salary_max, date_
     (1, 'Technical Writer',        'Contract',   55000,  75000, '2025-01-12', JSON_ARRAY('Documentation','Markdown','Git','Communication')),
     (2, 'Intern - Data',           'Internship', 30000,  40000, '2025-01-13', JSON_ARRAY('Python','SQL','Excel')),
     (4, 'Intern - Development',    'Internship', 32000,  42000, '2025-01-14', JSON_ARRAY('Python','Git','HTML')),
-    (6, 'Software Architect',      'Full-time', 120000, 150000, '2025-01-18', JSON_ARRAY('System Design','Python','AWS','SQL')); 
+    (6, 'Software Architect',      'Full-time', 120000, 150000, '2025-01-18', JSON_ARRAY('System Design','Python','AWS','SQL'));  
 
 -- Statuses mapped to the spec ENUM: 'Interview Scheduled'/'Interview Completed' -> 'Interview', 'Phone Screen' -> 'Screening'
 -- interview_data is new: placeholder JSON for the apps that reached an interview stage
