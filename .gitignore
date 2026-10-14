@@ -1,0 +1,11 @@
+# Real DB password lives here, never commit it
+config.py
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# Mac
+.DS_Store
