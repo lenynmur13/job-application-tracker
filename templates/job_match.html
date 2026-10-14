@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block title %}Job Match{% endblock %}
+
+{% block content %}
+<h1>Job Match</h1>
+
+{# GET form: the skills end up in the URL (?skills=...), so a refresh just repeats the search #}
+<form method="get" action="{{ url_for('job_match') }}" class="card">
+    <div class="form-group">
+        <label for="skills">Your skills (separate with commas)</label>
+        <input type="text" id="skills" name="skills" placeholder="Python, SQL, Flask"
+               value="{{ skills_text }}">
+    </div>
+    <button type="submit" class="btn">Find matching jobs</button>
+</form>
+
+{% if error %}
+<div class="alert alert-error">{{ error }}</div>
+{% endif %}
+
+{% if searched and not error %}
+<section class="card">
+    <h2>Matching Jobs</h2>
+    {% if matches %}
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Job</th>
+                <th>Match</th>
+                <th>Skills you have</th>
+                <th>Missing</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for m in matches %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>
+                    {% if m.job_url %}
+                    <a href="{{ m.job_url }}" target="_blank">{{ m.job_title }}</a>
+                    {% else %}
+                    <strong>{{ m.job_title }}</strong>
+                    {% endif %}
+                    <div class="muted-note">{{ m.company_name }} - {{ m.job_type }}</div>
+                </td>
+                <td>
+                    <strong>{{ m.percent }}%</strong>
+                    ({{ m.matched|length }}/{{ m.total }} skills)
+                    <div class="match-bar"><div class="match-fill" style="width: {{ m.percent }}%"></div></div>
+                </td>
+                <td>
+                    {% for s in m.matched %}
+                    <span class="badge skill-have">{{ s }}</span>
+                    {% else %}
+                    -
+                    {% endfor %}
+                </td>
+                <td>
+                    {% for s in m.missing %}
+                    <span class="badge skill-missing">{{ s }}</span>
+                    {% else %}
+                    -
+                    {% endfor %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% if skipped %}
+    <p class="muted-note">{{ skipped }} job(s) were skipped because they have no skills listed.</p>
+    {% endif %}
+    {% else %}
+    <p class="empty">No jobs have required skills listed yet. Add skills on the <a href="{{ url_for('jobs') }}">Jobs</a> page.</p>
+    {% endif %}
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'Edit' if mode == 'edit' else 'Add' }} Application{% endblock %}
+
+{% block content %}
+<h1>{{ 'Edit Application' if mode == 'edit' else 'Add Application' }}</h1>
+
+{% if errors %}
+<div class="alert alert-error">
+    <ul class="error-list">
+        {% for e in errors %}
+        <li>{{ e }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+{% if not jobs %}
+<div class="alert alert-error">
+    There are no jobs yet. <a href="{{ url_for('add_job') }}">Add a job</a> first.
+</div>
+{% endif %}
+
+{# Same form for add and edit; it posts back to the page it was loaded from #}
+<form method="post" class="card">
+    <div class="form-group">
+        <label for="job_id">Job *</label>
+        <select id="job_id" name="job_id" required>
+            <option value="">-- Choose a job --</option>
+            {% for j in jobs %}
+            <option value="{{ j.job_id }}" {% if j.job_id|string == application.job_id|string %}selected{% endif %}>
+                {{ j.job_title }} - {{ j.company_name }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="form-row">
+        <div class="form-group">
+            <label for="application_date">Application date *</label>
+            <input type="date" id="application_date" name="application_date" required
+                   value="{{ application.application_date or '' }}">
+        </div>
+        <div class="form-group">
+            <label for="status">Status *</label>
+            <select id="status" name="status" required>
+                {% for s in statuses %}
+                <option value="{{ s }}" {% if s == application.status %}selected{% endif %}>{{ s }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-group">
+            <label for="resume_version">Resume version</label>
+            <input type="text" id="resume_version" name="resume_version" maxlength="50" placeholder="v2.1"
+                   value="{{ application.resume_version or '' }}">
+        </div>
+        <div class="form-group checkbox-group">
+            <label>
+                <input type="checkbox" name="cover_letter_sent" {% if application.cover_letter_sent %}checked{% endif %}>
+                Cover letter sent
+            </label>
+        </div>
+    </div>
+
+    <h2>Interview details (optional)</h2>
+    <div class="form-row">
+        <div class="form-group">
+            <label for="interview_type">Type</label>
+            <input type="text" id="interview_type" name="interview_type" maxlength="50" placeholder="Phone screen"
+                   value="{{ application.interview_type or '' }}">
+        </div>
+        <div class="form-group">
+            <label for="interview_date">Date</label>
+            <input type="date" id="interview_date" name="interview_date"
+                   value="{{ application.interview_date or '' }}">
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label for="interviewer">Interviewer</label>
+            <input type="text" id="interviewer" name="interviewer" maxlength="100"
+                   value="{{ application.interviewer or '' }}">
+        </div>
+        <div class="form-group">
+            <label for="interview_result">Result</label>
+            <input type="text" id="interview_result" name="interview_result" maxlength="50" placeholder="Pending"
+                   value="{{ application.interview_result or '' }}">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="notes">Notes</label>
+        <textarea id="notes" name="notes">{{ application.notes or '' }}</textarea>
+    </div>
+
+    <div class="actions">
+        <button type="submit" class="btn">{{ 'Save Changes' if mode == 'edit' else 'Add Application' }}</button>
+        <a class="btn btn-secondary" href="{{ url_for('applications') }}">Cancel</a>
+    </div>
+</form>
+{% endblock %}

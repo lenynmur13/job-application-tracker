@@ -1,15 +1,48 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Job Tracker Dashboard</title>
-</head>
-<body>
-    <h1>Job Application Dashboard</h1>
-    <ul>
-        {% for c in companies %}
-            <li>{{ c.company_name }} - {{ c.industry }} ({{ c.city }})</li>
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h1>Dashboard</h1>
+
+<section class="stat-grid">
+    <div class="stat-card"><span class="stat-number">{{ totals.companies }}</span><span class="stat-label">Companies</span></div>
+    <div class="stat-card"><span class="stat-number">{{ totals.jobs }}</span><span class="stat-label">Jobs</span></div>
+    <div class="stat-card"><span class="stat-number">{{ totals.applications }}</span><span class="stat-label">Applications</span></div>
+    <div class="stat-card"><span class="stat-number">{{ totals.contacts }}</span><span class="stat-label">Contacts</span></div>
+</section>
+
+<section class="card">
+    <h2>Applications by Status</h2>
+    <div class="status-row">
+        {% for status, count in status_counts %}
+        <div class="status-item">
+            <span class="badge status-{{ status|lower }}">{{ status }}</span>
+            <span class="status-count">{{ count }}</span>
+        </div>
         {% endfor %}
-    </ul>
-</body>
-</html>
+    </div>
+</section>
+
+<section class="card">
+    <h2>Recent Applications</h2>
+    {% if recent %}
+    <table>
+        <thead>
+            <tr><th>Date</th><th>Job</th><th>Company</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+            {% for a in recent %}
+            <tr>
+                <td class="nowrap">{{ a.application_date.strftime('%b %d, %Y') }}</td>
+                <td>{{ a.job_title }}</td>
+                <td>{{ a.company_name }}</td>
+                <td><span class="badge status-{{ a.status|lower }}">{{ a.status }}</span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="empty">No applications yet.</p>
+    {% endif %}
+</section>
+{% endblock %}

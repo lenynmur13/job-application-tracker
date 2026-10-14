@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'Edit' if mode == 'edit' else 'Add' }} Company{% endblock %}
+
+{% block content %}
+<h1>{{ 'Edit Company' if mode == 'edit' else 'Add Company' }}</h1>
+
+{% if errors %}
+<div class="alert alert-error">
+    <ul class="error-list">
+        {% for e in errors %}<li>{{ e }}</li>{% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+{# One template serves both add and edit; the form posts back to whichever route rendered it #}
+<form method="post" class="card">
+    <div class="form-group">
+        <label for="company_name">Company name *</label>
+        <input type="text" id="company_name" name="company_name" maxlength="100" required
+               value="{{ company.company_name or '' }}">
+    </div>
+
+    <div class="form-row">
+        <div class="form-group">
+            <label for="industry">Industry</label>
+            <input type="text" id="industry" name="industry" maxlength="50" value="{{ company.industry or '' }}">
+        </div>
+        <div class="form-group">
+            <label for="website">Website</label>
+            <input type="text" id="website" name="website" maxlength="200" placeholder="www.example.com"
+                   value="{{ company.website or '' }}">
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-group">
+            <label for="city">City</label>
+            <input type="text" id="city" name="city" maxlength="50" value="{{ company.city or '' }}">
+        </div>
+        <div class="form-group">
+            <label for="state">State</label>
+            <input type="text" id="state" name="state" maxlength="50" value="{{ company.state or '' }}">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="notes">Notes</label>
+        <textarea id="notes" name="notes">{{ company.notes or '' }}</textarea>
+    </div>
+
+    <div class="actions">
+        <button type="submit" class="btn">{{ 'Save Changes' if mode == 'edit' else 'Add Company' }}</button>
+        <a class="btn btn-secondary" href="{{ url_for('companies') }}">Cancel</a>
+    </div>
+</form>
+{% endblock %}

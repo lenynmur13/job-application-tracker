@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'Edit' if mode == 'edit' else 'Add' }} Job{% endblock %}
+
+{% block content %}
+<h1>{{ 'Edit Job' if mode == 'edit' else 'Add Job' }}</h1>
+
+{% if errors %}
+<div class="alert alert-error">
+    <ul class="error-list">
+        {% for e in errors %}
+        <li>{{ e }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+{% if not company_list %}
+<div class="alert alert-error">
+    There are no companies yet. <a href="{{ url_for('add_company') }}">Add a company</a> first.
+</div>
+{% endif %}
+
+{# Same form for add and edit; it posts back to the page it was loaded from #}
+<form method="post" class="card">
+    <div class="form-row">
+        <div class="form-group">
+            <label for="job_title">Job title *</label>
+            <input type="text" id="job_title" name="job_title" maxlength="100" required
+                   value="{{ form.job_title or '' }}">
+        </div>
+        <div class="form-group">
+            <label for="company_id">Company *</label>
+            <select id="company_id" name="company_id" required>
+                <option value="">-- Choose a company --</option>
+                {% for c in company_list %}
+                <option value="{{ c.company_id }}" {% if c.company_id|string == form.company_id %}selected{% endif %}>
+                    {{ c.company_name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-group">
+            <label for="job_type">Job type *</label>
+            <select id="job_type" name="job_type" required>
+                {% for t in job_types %}
+                <option value="{{ t }}" {% if t == form.job_type %}selected{% endif %}>{{ t }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="date_posted">Date posted</label>
+            <input type="date" id="date_posted" name="date_posted" value="{{ form.date_posted or '' }}">
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-group">
+            <label for="salary_min">Salary min</label>
+            <input type="number" id="salary_min" name="salary_min" min="0" value="{{ form.salary_min or '' }}">
+        </div>
+        <div class="form-group">
+            <label for="salary_max">Salary max</label>
+            <input type="number" id="salary_max" name="salary_max" min="0" value="{{ form.salary_max or '' }}">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="job_url">Job URL</label>
+        <input type="text" id="job_url" name="job_url" maxlength="300" value="{{ form.job_url or '' }}">
+    </div>
+
+    <div class="form-group">
+        <label for="requirements">Required skills (separate with commas)</label>
+        <input type="text" id="requirements" name="requirements" placeholder="Python, SQL, Flask"
+               value="{{ form.requirements or '' }}">
+    </div>
+
+    <div class="form-group">
+        <label for="job_description">Description</label>
+        <textarea id="job_description" name="job_description">{{ form.job_description or '' }}</textarea>
+    </div>
+
+    <div class="actions">
+        <button type="submit" class="btn">{{ 'Save Changes' if mode == 'edit' else 'Add Job' }}</button>
+        <a class="btn btn-secondary" href="{{ url_for('jobs') }}">Cancel</a>
+    </div>
+</form>
+{% endblock %}

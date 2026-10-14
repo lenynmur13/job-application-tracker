@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}Companies{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Companies</h1>
+    <a class="btn" href="{{ url_for('add_company') }}">+ Add Company</a>
+</div>
+
+<section class="card">
+    {% if companies %}
+    <table>
+        <thead>
+            <tr>
+                <th>Company</th><th>Industry</th><th>Location</th><th>Website</th>
+                <th>Jobs</th><th>Contacts</th><th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in companies %}
+            <tr>
+                <td><strong>{{ c.company_name }}</strong>
+                    {% if c.notes %}<div class="muted-note">{{ c.notes }}</div>{% endif %}</td>
+                <td>{{ c.industry or '-' }}</td>
+                <td>{{ [c.city, c.state] | select | join(', ') or '-' }}</td>
+                <td>
+                    {% if c.website %}
+                    {# Seed data stores sites without a scheme, so add one or the browser treats the link as a relative path #}
+                    <a href="{{ c.website if c.website.startswith('http') else 'https://' + c.website }}"
+                       target="_blank" rel="noopener">{{ c.website }}</a>
+                    {% else %}-{% endif %}
+                </td>
+                <td>{{ c.job_count }}</td>
+                <td>{{ c.contact_count }}</td>
+                <td>
+                    <div class="actions">
+                        <a class="btn btn-sm btn-secondary" href="{{ url_for('edit_company', company_id=c.company_id) }}">Edit</a>
+                        {# Confirmation: onsubmit cancels the POST unless the user clicks OK. The message names the cascade.
+                           tojson makes the text a safe JS string (quotes in company names can't break out), and the
+                           attribute uses single quotes because tojson output contains double quotes. #}
+                        {% set confirm_msg = 'Delete ' ~ c.company_name ~ '? This also deletes its ' ~ c.job_count ~ ' job(s), ' ~ c.contact_count ~ ' contact(s) and their applications.' %}
+                        <form method="post" action="{{ url_for('delete_company', company_id=c.company_id) }}"
+                              onsubmit='return confirm({{ confirm_msg | tojson }});'>
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="empty">No companies yet. <a href="{{ url_for('add_company') }}">Add your first one.</a></p>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}Jobs{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Jobs</h1>
+    <a class="btn" href="{{ url_for('add_job') }}">+ Add Job</a>
+</div>
+
+<section class="card">
+    {% if jobs %}
+    <table>
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Company</th>
+                <th>Type</th>
+                <th>Salary</th>
+                <th>Posted</th>
+                <th>Skills</th>
+                <th>Applications</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for j in jobs %}
+            <tr>
+                <td>
+                    {% if j.job_url %}
+                    <a href="{{ j.job_url }}" target="_blank">{{ j.job_title }}</a>
+                    {% else %}
+                    {{ j.job_title }}
+                    {% endif %}
+                </td>
+                <td>{{ j.company_name }}</td>
+                <td class="nowrap">{{ j.job_type }}</td>
+                <td class="nowrap">
+                    {% if j.salary_min and j.salary_max %}
+                    ${{ '{:,}'.format(j.salary_min) }} - ${{ '{:,}'.format(j.salary_max) }}
+                    {% elif j.salary_min %}
+                    From ${{ '{:,}'.format(j.salary_min) }}
+                    {% elif j.salary_max %}
+                    Up to ${{ '{:,}'.format(j.salary_max) }}
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+                <td class="nowrap">{{ j.date_posted or '-' }}</td>
+                <td>
+                    {% for skill in j.skills %}
+                    <span class="badge skill">{{ skill }}</span>
+                    {% else %}
+                    -
+                    {% endfor %}
+                </td>
+                <td>{{ j.application_count }}</td>
+                <td>
+                    <div class="actions">
+                        <a class="btn btn-sm btn-secondary" href="{{ url_for('edit_job', job_id=j.job_id) }}">Edit</a>
+                        {# Confirm before deleting; the popup says how many applications go with the job #}
+                        <form method="post" action="{{ url_for('delete_job', job_id=j.job_id) }}"
+                              onsubmit="return confirm('Delete this job and its {{ j.application_count }} application(s)?');">
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="empty">No jobs yet. <a href="{{ url_for('add_job') }}">Add your first one.</a></p>
+    {% endif %}
+</section>
+{% endblock %}
