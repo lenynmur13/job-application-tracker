@@ -1,6 +1,6 @@
 # Job Application Tracker
 
-A web application for tracking job applications, built for COP4751. It stores companies, jobs, applications, and contacts in MySQL, serves them through a Flask backend with HTML/CSS templates, and includes a Job Match page that ranks jobs by how many of your skills they require. [GAP: confirm the Job Match description once that feature is built.]
+A web application for tracking job applications, built for COP4751. It stores companies, jobs, applications, and contacts in MySQL, serves them through a Flask backend with HTML/CSS templates, and includes a Job Match page that ranks jobs by how many of your skills they require.
 
 ## Tech Stack
 
@@ -21,7 +21,7 @@ Python 3 with Flask, MySQL 8 (the `jobs.requirements` and `applications.intervie
 
 ## Features
 
-The dashboard shows totals for each table, applications grouped by status, and the five most recent applications. [GAP: update this paragraph as each page is completed: full create/read/update/delete with delete confirmation for companies, jobs, applications, and contacts, plus the Job Match page.]
+The dashboard shows totals for each table, applications grouped by status, and the five most recent applications.
 
 ## Database
 
@@ -29,4 +29,4 @@ Four tables linked by foreign keys: `jobs` and `contacts` belong to a company, a
 
 ## Demo and Documentation
 
-AI tool usage is documented in [AI_USAGE.md](AI_USAGE.md). [GAP: add the demo video link here.]
+AI tool usage is documented in AI_USAGE.md
