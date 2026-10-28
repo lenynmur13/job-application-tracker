@@ -12,10 +12,10 @@ def fetch_all(query, params=None):
     conn = get_db()
     try:
         cursor = conn.cursor(dictionary=True)
-        cursor.execute(query, params or ())  # params keep queries parameterized (no SQL injection)
+        cursor.execute(query, params or ())  # params keep queries parameterized
         return cursor.fetchall()
     finally:
-        conn.close()  # always release the connection, even if the query raised
+        conn.close() 
 
 
 def fetch_one(query, params=None):
@@ -35,10 +35,10 @@ def execute(query, params=None):
     try:
         cursor = conn.cursor()
         cursor.execute(query, params or ())
-        conn.commit()  # without this, changes are lost when the connection closes
+        conn.commit()  
         return cursor.lastrowid
     except mysql.connector.Error:
-        conn.rollback()  # undo a partial change, then let the route decide how to report it
+        conn.rollback()  
         raise
     finally:
         conn.close()

@@ -8,7 +8,7 @@ from flask import Flask, abort, flash, redirect, render_template, request, url_f
 from database import execute, fetch_all, fetch_one
 
 app = Flask(__name__)
-# flash() stores messages in the session, which needs a secret key (override with a SECRET_KEY env var)
+# flash() stores messages in the session, which needs a secret key
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-only-change-me')
 
 # Pipeline order, matching the applications.status ENUM in schema.sql
@@ -53,7 +53,7 @@ def dashboard():
                            status_counts=status_counts, recent=recent)
 
 
-# ---------------------------------------------------------------- Companies
+# ------------------------------- Companies ---------------------------------
 
 def read_company_form():
     # Pull fields from the POST body; blank optional fields become NULL instead of ''
@@ -63,7 +63,7 @@ def read_company_form():
         data[field] = value or None
     data['notes'] = request.form.get('notes', '').strip() or None
 
-    # Validate: name is NOT NULL in the schema, and every field must fit its column
+    # Validate, name is NOT NULL in the schema, and every field must fit its column
     errors = []
     if not data['company_name']:
         errors.append('Company name is required.')
@@ -82,8 +82,7 @@ def get_company_or_404(company_id):
 
 @app.route('/companies')
 def companies():
-    # Per-company job and contact counts; the subqueries avoid the row multiplication
-    # a double JOIN would cause (jobs x contacts)
+    # Per-company job and contact counts. the subqueries avoid the row multiplication
     rows = fetch_all('''
         SELECT c.*,
                (SELECT COUNT(*) FROM jobs     j WHERE j.company_id = c.company_id) AS job_count,
@@ -105,7 +104,7 @@ def add_company():
                     VALUES (%(company_name)s, %(industry)s, %(website)s, %(city)s, %(state)s, %(notes)s)
                 ''', data)
                 flash(f"Added {data['company_name']}.", 'success')
-                return redirect(url_for('companies'))  # POST-redirect-GET: refresh won't resubmit
+                return redirect(url_for('companies')) 
             except mysql.connector.Error as e:
                 errors.append(f'Database error: {e}')
         # Re-render with what the user typed so nothing is lost
@@ -138,7 +137,7 @@ def edit_company(company_id):
 
 @app.route('/companies/<int:company_id>/delete', methods=['POST'])
 def delete_company(company_id):
-    # POST only: a GET link could be triggered by crawlers or prefetching
+
     company = get_company_or_404(company_id)
     try:
         # ON DELETE CASCADE in schema.sql also removes this company's jobs, contacts and their applications
@@ -149,11 +148,10 @@ def delete_company(company_id):
     return redirect(url_for('companies'))
 
 
-# --------------------------------------------------------------------- Jobs
+# -------------------------------- Jobs ------------------------------------- 
 
 def parse_skills(text):
-    # "Python, SQL\nflask, python" -> ['Python', 'SQL', 'flask']: split on commas/newlines,
-    # trim, drop blanks, drop case-insensitive duplicates (keeps first spelling)
+    # split on commas/newlines, trim, drop blanks, drop case-insensitive duplicates (keeps first spelling)
     seen, skills = set(), []
     for part in (text or '').replace('\n', ',').split(','):
         skill = part.strip()
@@ -199,7 +197,7 @@ def read_job_form():
           'job_url', 'date_posted', 'requirements', 'job_description']}
     errors = []
 
-    # Company must be a real row, because the FK would reject anything else
+    # Company must be a real row. the FK would reject anything else
     company_id = int(f['company_id']) if f['company_id'].isdigit() else None
     if company_id is None or fetch_one('SELECT company_id FROM companies WHERE company_id = %s', (company_id,)) is None:
         errors.append('Choose a company from the list.')
@@ -228,7 +226,7 @@ def read_job_form():
         except ValueError:
             errors.append('Date posted must be a valid date (YYYY-MM-DD).')
 
-    # Skills -> JSON array for jobs.requirements (NULL when empty so Job Match can skip it)
+    # Skills means JSON array for jobs.requirements (NULL when empty so Job Match algorithm can skip it)
     skills = parse_skills(f['requirements'])
     if len(skills) > MAX_SKILLS:
         errors.append(f'List at most {MAX_SKILLS} skills.')
@@ -335,7 +333,7 @@ def edit_job(job_id):
 def delete_job(job_id):
     job = get_job_or_404(job_id)
     try:
-        # ON DELETE CASCADE also removes the applications tied to this job
+        # also removes the applications tied to this job
         execute('DELETE FROM jobs WHERE job_id = %s', (job_id,))
         flash(f"Deleted {job['job_title']} and its applications.", 'success')
     except mysql.connector.Error as e:
@@ -343,14 +341,14 @@ def delete_job(job_id):
     return redirect(url_for('jobs'))
 
 
-# ----------------------------------------------------------------- Contacts
+# ------------------------------ Contacts -----------------------------------
 
 def get_all_companies():
     return fetch_all('SELECT company_id, company_name FROM companies ORDER BY company_name')
 
 
 def read_contact_form():
-    # Keep the text exactly as typed; blanks become NULL later in contact_values()
+    # Keep the text exactly as typed. blanks become NULL later in contact_values()
     data = {
         'company_id': request.form.get('company_id', '').strip(),
         'contact_name': request.form.get('contact_name', '').strip(),
@@ -369,7 +367,7 @@ def read_contact_form():
     elif fetch_one('SELECT company_id FROM companies WHERE company_id = %s', (data['company_id'],)) is None:
         errors.append('That company does not exist.')
 
-    # Name is required (NOT NULL in the table)
+    # Name is required
     if data['contact_name'] == '':
         errors.append('Contact name is required.')
     elif len(data['contact_name']) > 100:
@@ -378,7 +376,7 @@ def read_contact_form():
     if len(data['title']) > 100:
         errors.append('Title must be 100 characters or fewer.')
 
-    # Very basic email check: something@something
+    # Very basic email something@something
     if data['email'] != '':
         if '@' not in data['email'] or data['email'].startswith('@') or data['email'].endswith('@'):
             errors.append('Email must look like name@example.com.')
@@ -395,13 +393,13 @@ def read_contact_form():
 
 
 def contact_values(data):
-    # Convert the form text into what MySQL expects (blank -> NULL)
+    # Convert the form text into what MySQL expects
     values = dict(data)
     values['company_id'] = int(data['company_id'])
     for field in ['title', 'email', 'phone', 'linkedin_url', 'notes']:
         values[field] = data[field] or None
 
-    # Without http(s):// the browser treats the link as a page on this site, so add it
+    # Without http(s):// the browser treats the link as a page on this site
     url = values['linkedin_url']
     if url and not url.startswith('http'):
         values['linkedin_url'] = 'https://' + url
@@ -484,11 +482,10 @@ def delete_contact(contact_id):
     return redirect(url_for('contacts'))
 
 
-# -------------------------------------------------------------- Applications
+# ------------------------------- Applications ------------------------------- 
 
 def interview_rounds(value):
-    # interview_data looks like {"rounds": [{"type": ..., "date": ..., "interviewer": ..., "result": ...}]}
-    # MySQL can hand it back as text, so turn it into a Python list of rounds (empty if missing)
+    # MySQL can hand data back as text, so turn it into a Python list of rounds (empty if missing)
     if value is None:
         return []
     if isinstance(value, bytes):
@@ -514,7 +511,7 @@ def get_all_jobs():
 
 
 def read_application_form():
-    # Keep the text exactly as typed; it is converted in application_values() when saving
+    # Keep the text exactly as typed. it is converted in application_values() when saving
     data = {
         'job_id': request.form.get('job_id', '').strip(),
         'application_date': request.form.get('application_date', '').strip(),
@@ -593,7 +590,7 @@ def application_values(data, old_rounds):
     if first_round:
         rounds.insert(0, first_round)
 
-    # No interview info at all -> store NULL instead of an empty object
+    # No interview info at all so store NULL instead of an empty object
     values['interview_data'] = json.dumps({'rounds': rounds}) if rounds else None
     return values
 
@@ -703,7 +700,7 @@ def delete_application(application_id):
     return redirect(url_for('applications'))
 
 
-# ---------------------------------------------------------------- Job Match
+# ------------------------------- Job Match ---------------------------------
 
 def match_jobs(user_skills):
     # Compare the user's skills with each job's required skills.
